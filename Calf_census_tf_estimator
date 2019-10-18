@@ -1,0 +1,81 @@
+import pandas as pd
+data = pd.read_csv('california_census.csv')
+data.head()
+
+data['income'].unique()
+
+def income(label):
+    if label=='<=50K':
+        return 0
+    else:
+        return 1
+data['income']=data['income'].apply(income)
+
+x=data.drop('income',axis=1)
+y=data['income']
+
+from sklearn.model_selection import train_test_split as tts
+xtrain,xtest,ytrain,ytest = tts(x,y,test_size=0.3)
+
+data.columns
+
+cols=['age', 'workclass', 'fnlwgt', 'education', 'education.num',
+       'marital.status', 'occupation', 'relationship', 'race', 'sex',
+       'capital.gain', 'capital.loss', 'hours.per.week', 'native.country',
+       'income']
+
+import tensorflow as tf
+#numeric cols
+age=tf.feature_column.numeric_column('age')
+wgt=tf.feature_column.numeric_column('fnlwgt')
+edu=tf.feature_column.numeric_column('education.num')
+gain=tf.feature_column.numeric_column('capital.gain')
+loss=tf.feature_column.numeric_column('capital.loss')
+hours=tf.feature_column.numeric_column('hours.per.week')
+
+#categoric cols
+workclass=tf.feature_column.categorical_column_with_hash_bucket('workclass',100)
+education=tf.feature_column.categorical_column_with_hash_bucket('education',100)
+marital=tf.feature_column.categorical_column_with_hash_bucket('marital.status',100)
+occupation=tf.feature_column.categorical_column_with_hash_bucket('occupation',100)
+relationship=tf.feature_column.categorical_column_with_hash_bucket('relationship',100)
+race=tf.feature_column.categorical_column_with_hash_bucket('race',100)
+sex=tf.feature_column.categorical_column_with_hash_bucket('sex',100)
+country =tf.feature_column.categorical_column_with_hash_bucket('native.country',100)
+
+
+feat_cols=[age,wgt,edu,gain,loss,hours,workclass,education,marital,occupation,relationship,
+           race,sex,country           
+           ]
+
+input_func=tf.estimator.inputs.pandas_input_fn(xtrain,ytrain,
+                                               batch_size=10,num_epochs=1000,
+                                              shuffle=True 
+                                               )
+
+classifier=tf.estimator.LinearClassifier(feature_columns=feat_cols, n_classes=2)
+
+classifier.train(input_func, steps=10000)
+
+pred_func=tf.estimator.inputs.pandas_input_fn(xtest,batch_size=10,
+                                              num_epochs=1, shuffle=False)
+predict=classifier.predict(pred_func)
+
+op=list(predict)
+
+result=[]
+for i in range(0,len(op)):
+    result.append(op[i]['class_ids'][0])
+
+from sklearn.metrics import classification_report
+
+print(classification_report(ytest,result))
+
+
+
+
+
+
+
+
+
