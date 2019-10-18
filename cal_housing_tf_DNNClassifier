@@ -1,0 +1,63 @@
+import pandas as pd
+data = pd.read_csv('housing.csv')
+#data.info()
+#data.describe()
+#data.head()
+data=data.drop('ocean_proximity',axis=1)
+x_data=data.drop('median_house_value',axis=1)
+y_data=data['median_house_value']
+#y_data.head()
+
+#Splitting the data to train test split
+from sklearn.model_selection import train_test_split as tts
+xtrain,xtest,ytrain,ytest = tts(x_data,y_data,test_size=0.3,random_state=101)
+#xtrain.columns
+
+#Normalising the data 
+from sklearn.preprocessing import MinMaxScaler as mm
+scale=mm(feature_range=(0,1), copy=True)
+
+xtr=pd.DataFrame(data=scale.fit_transform(xtrain),
+                 columns=xtrain.columns,
+                 index=xtrain.index
+                 )
+xts=pd.DataFrame(data=scale.fit_transform(xtest),
+                 columns=xtest.columns,
+                 index=xtest.index
+                 )
+
+import tensorflow as tf
+cols=['longitude', 'latitude', 'housing_median_age', 'total_rooms',
+       'total_bedrooms', 'population', 'households', 'median_income']
+    
+long=tf.feature_column.numeric_column('longitude')
+lat=tf.feature_column.numeric_column('latitude')
+age=tf.feature_column.numeric_column('housing_median_age')
+rooms=tf.feature_column.numeric_column('total_rooms')
+bed=tf.feature_column.numeric_column('total_bedrooms')
+pop=tf.feature_column.numeric_column('population')
+hh=tf.feature_column.numeric_column('households')
+income=tf.feature_column.numeric_column('median_income')
+
+feat_cols=[long,lat,age,rooms,bed,pop,hh,income]
+
+input_func=tf.estimator.inputs.pandas_input_fn(x=xtrain,y=ytrain,
+                                               batch_size=10,num_epochs=1000,
+                                               shuffle=True)
+
+pred_input_func=tf.estimator.inputs.pandas_input_fn(x=xtest,batch_size=10,
+                                                    num_epochs=1,shuffle=False)
+
+model=tf.estimator.DNNRegressor(hidden_units=[8,8,8],feature_columns=feat_cols)
+
+model.train(input_fn=input_func,steps=1000)
+
+predictions=model.predict(input_fn=pred_input_func)
+
+final_preds=[]
+for i in predictions:
+    final_preds.append(i['predcitions'])
+
+from sklearn.metrics import mean_squared_error as err
+err(ytest,final_preds)**0.5
+
