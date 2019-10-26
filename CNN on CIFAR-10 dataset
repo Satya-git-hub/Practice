@@ -17,7 +17,7 @@ Download the data for CIFAR form here: https://www.cs.toronto.edu/~kriz/cifar.ht
 '''
 
 #Put file path as a string here
-CIFAR_DIR = ''
+CIFAR_DIR = 'D:/IT DOCxxx/datasets/cifar-10-batches-py/'
 
 '''
 The archive contains the files data_batch_1, data_batch_2, ... as well as test_batch. Each of these files is a Pyhton pickled object produced with cPickle.
@@ -35,7 +35,7 @@ dirs = ['batches.meta','data_batch_1','data_batch_2','data_batch_3','data_batch_
 
 all_data = [0,1,2,3,4,5,6]
 
-for i in zip(all_data, dirs):
+for i,direc in zip(all_data, dirs):
 	all_data[i] = unpickle(CIFAR_DIR+direc)
 
 batch_meta = all_data[0]
@@ -68,9 +68,10 @@ import matplotlib.pyplot as plt
 %matplotlib inline
 import numpy as np
 
-X = X.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("unit8")
+X = data_batch_1[b'data']
+X = X.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("uint8")
 
-plt.imshow(X[0])
+plt.imshow(X[4])
 
 #Helper Functions for dealing with data
 
@@ -83,7 +84,7 @@ def one_hot_encode(vec, vals=10):
 	out[range(n), vec] = 1
 	return out
 
-class CifarHelper()
+class CifarHelper():
 
 	def __init__(self):
 
