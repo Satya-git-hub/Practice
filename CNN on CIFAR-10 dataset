@@ -1,0 +1,143 @@
+#CNN on CIFAR-10 dataset
+'''
+We'll be using the CIFAR-10 dataset, which is very famous dataset for image recognition!
+
+The CIFAR-10 dataset consists of 60000 32X32 color images, with 6000 images per class. There are 50000 training images and 10000 test images.
+ 
+ The dataset is divided into five training batches and one test batch, each with 10000 images. The test batch contains exactly 1000 randomly-selected images from each class. 
+
+Most of the challenge with this project is actually dealing with the data and it's dimensions, not from setting up the CNN itself!
+'''
+
+'''
+STEP 0: Get the Data
+Note: Its more about setting up your data. 
+
+Download the data for CIFAR form here: https://www.cs.toronto.edu/~kriz/cifar.html
+'''
+
+#Put file path as a string here
+CIFAR_DIR = ''
+
+'''
+The archive contains the files data_batch_1, data_batch_2, ... as well as test_batch. Each of these files is a Pyhton pickled object produced with cPickle.
+'''
+
+#Load the data. Use the below code to load the data:
+
+def unpickle(file):
+	import pickle
+	with open(file, 'rb') as fo:
+		cifar_dict = pickle.load(fo, encoding='bytes')
+	return cifar_dict
+
+dirs = ['batches.meta','data_batch_1','data_batch_2','data_batch_3','data_batch_4','data_batch_4','test_batch']
+
+all_data = [0,1,2,3,4,5,6]
+
+for i in zip(all_data, dirs):
+	all_data[i] = unpickle(CIFAR_DIR+direc)
+
+batch_meta = all_data[0]
+data_batch_1 = all_data[1]
+data_batch_2 = all_data[2]
+data_batch_3 = all_data[3]
+data_batch_4 = all_data[4]
+data_batch_5 = all_data[5]
+test_batch = all_data[6]
+
+batch_meta
+
+data_batch_1.keys()
+
+'''
+Loaded in this way, each of the batch files contains a dictionary with the following elements:
+- data : a 10000X3072 numpy array of units. Each row of the array stores a 32X32 color image. The first 1024 entries contain the red channels values, the next 1024 the green, and the next 1024 the blue. The im,age is stored in row major order, so that the first 32 entries of the array are the red channel values of the first row of the image.
+- labels : a list of 10000 numbers in the range 0-9. The number at the index indicates the label of the ith image in the array data.
+
+The dataset contains another file, called batches.meta. It too contains a python dictionary object. It has the following entires:
+- labels_names : a 10-element list which gives meaningful names to the numeric labels in the labels array described above. For example, label_names[0] == 'airplanes', label_names[1] == 'automobile', etc.
+'''
+
+#Display a single image using matplotlib.
+#Grab a single image from data_batch1 and display it with plt.imshow(). You'll need to reshape and transpose the numpy array inside the X = data_batch[b'data'] dictionary entry.
+
+#Array of all images reshaped and formatted for viewing 
+
+import matplotlib.pyplot as plt
+%matplotlib inline
+import numpy as np
+
+X = X.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("unit8")
+
+plt.imshow(X[0])
+
+#Helper Functions for dealing with data
+
+def one_hot_encode(vec, vals=10):
+	
+	#For use to one_hot encode the 10 possible labels
+
+	n = len(vec)
+	out = np.zeros((n,vals))
+	out[range(n), vec] = 1
+	return out
+
+class CifarHelper()
+
+	def __init__(self):
+
+		#Grabs a list of all the data batches for training 
+		self.all_train_batches = [data_batch1,data_batch2,data_batch3,data_batch4,data_batch5]
+		#Grabs a list of all the test_batches (really just one batch)
+		self.test_batch = [test_batch]
+
+		#Initialize some empty variables for later on 
+		self.training_images = None 
+		self.training_labels = None
+
+		self.test_images = None
+		self.test_labels = None
+
+	def set_up_images(self):
+
+		print('Setting Up Training Images and Labels') 
+
+		#Vertically stacks the training images
+		self.training_images = np.vstack([d[b"data"] for d in self.all_train_batches])
+		train_len = len(slef.training_images)
+
+		#Reshapes and normalizes training images
+		self.training_images = self.training_images.reshape(train_len,3,32,32).transpose(0,2,3,1)/255
+		#One hot Encodes the training labels (e.g. [0,0,0,1,0,0,0,0,0,0])
+		self.training_labels = one_hot_encode(np.hstack([d[b"labels"] for d in self.all_train_batches]),10)
+
+		print('Setting Up Test Images and Labels')
+
+		#Vertically stacks the test images
+		self.test_images = np.vstack([d[b"data"] for d in self.test_batch])
+		test_len = len(self.test_images)
+		
+		#Reshapes and normalizes training images
+		self.test_images = self.test_images.reshape(test_len,3,32,32).transpose(0,2,3,1)/255
+		#One hot Encodes the training labels (e.g. [0,0,0,1,0,0,0,0,0,0])
+		self.test_labels = one_hot_encode(np.hstack([d[b"labels"] for d in self.all_test_batches]),10)
+
+	def next_batch(self, batch_size):
+		#Note that the 100 dimensions in the reshape call is set by an assumed batch size 100
+		x = self.training_images[self.i:self.i+batch_size].reshape(100,32,32,3)
+		y = self.training_images[self.i:self.i+batch_size]
+		self.i = (self.i + batch_size) % len(self.training_images)
+		return x, y 
+
+#How to use the above code:
+#Before your tf.Session run these two lines 
+ch = CifarHelper()
+ch.set_up_images()
+
+#During your session to grab the next batch use this line 
+#(just like mnist.train.next_batch)	
+#batch = ch.next_batch(100)
+
+#Creating the Model
+
