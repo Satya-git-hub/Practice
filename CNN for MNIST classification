@@ -90,9 +90,11 @@ with tf.Session() as sess :
             print(sess.run(acc, feed_dict={x:mnist.test.images, y_true:mnist.test.labels, hold_prob:1.0}))
             print('\n')
 
-
-
-
+'''
+ON STEP: 4900
+ACCURACY: 
+0.9913
+'''
 
 
 
