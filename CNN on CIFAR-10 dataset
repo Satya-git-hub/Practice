@@ -52,7 +52,10 @@ data_batch_1.keys()
 
 '''
 Loaded in this way, each of the batch files contains a dictionary with the following elements:
-- data : a 10000X3072 numpy array of units. Each row of the array stores a 32X32 color image. The first 1024 entries contain the red channels values, the next 1024 the green, and the next 1024 the blue. The im,age is stored in row major order, so that the first 32 entries of the array are the red channel values of the first row of the image.
+- data : a 10000X3072 numpy array of units. Each row of the array stores a 32X32 color image. 
+The first 1024 entries contain the red channels values, the next 1024 the green, and the next 1024 the blue.
+ The image is stored in row major order, so that the first 32 entries of the array are the red channel values of the first row of the image.
+
 - labels : a list of 10000 numbers in the range 0-9. The number at the index indicates the label of the ith image in the array data.
 
 The dataset contains another file, called batches.meta. It too contains a python dictionary object. It has the following entires:
@@ -60,7 +63,8 @@ The dataset contains another file, called batches.meta. It too contains a python
 '''
 
 #Display a single image using matplotlib.
-#Grab a single image from data_batch1 and display it with plt.imshow(). You'll need to reshape and transpose the numpy array inside the X = data_batch[b'data'] dictionary entry.
+#Grab a single image from data_batch1 and display it with plt.imshow(). 
+#You'll need to reshape and transpose the numpy array inside the X = data_batch[b'data'] dictionary entry.
 
 #Array of all images reshaped and formatted for viewing 
 
@@ -70,6 +74,10 @@ import numpy as np
 
 X = data_batch_1[b'data']
 X = X.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("uint8")
+
+#The original shape is (3,32,32), which is interpret as (RGB, X, Y). 
+#However, imshow expects an array of shape MxNx3 - the color information must be in the last dimension.
+#By transposing the array you invert the order of dimensions: (RGB, X, Y) becomes (Y, X, RGB)
 
 plt.imshow(X[4])
 
@@ -141,4 +149,37 @@ ch.set_up_images()
 #batch = ch.next_batch(100)
 
 #Creating the Model
+
+import tensorflow as tf
+
+#Placeholder
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
