@@ -1,0 +1,103 @@
+import pandas as pd
+data = pd.read_csv('D:/IT DOCxxx/datasets/Hitachi Data Engineer Hiring Challenge/Train.csv')
+#dropping the irrelevant data
+drop_cols = ['current_date','id_code','current_time','train_name']
+data = data.drop(columns=drop_cols, axis=1)
+
+x_data=data.drop(columns='target', axis=1)
+x_data = x_data.replace('UNDEFINED', 'NaN')
+
+data.info()
+
+        country_code_source            1283 non-null object
+longitude_source               1283 non-null float64
+latitude_source                1283 non-null float64
+mean_halt_times_source         1283 non-null float64
+        country_code_destination       1251 non-null object #KNN
+
+
+longitude_destination          1251 non-null float64 #most frequent
+latitude_destination           1251 non-null float64 # 
+mean_halt_times_destination    1251 non-null float64 # 
+
+
+
+
+#find the duplicate rows
+data[data.duplicated()]
+#******************************** Missing value Treat ment ********************
+'''
+country_code_destination       1251 non-null object
+longitude_destination          1251 non-null float64
+latitude_destination           1251 non-null float64
+mean_halt_times_destination    1251 non-null float64
+
+'''
+test = data[['longitude_destination','latitude_destination','mean_halt_times_destination']]
+from sklearn.impute import SimpleImputer as SI
+imputer = SI(strategy = 'most_frequent')
+imputer.fit(test)
+test = imputer.transform(test)
+test.head()
+
+def csvDf(dat,**kwargs): 
+  from numpy import array
+  data = array(dat)
+  if data is None or len(data)==0 or len(data[0])==0:
+    return None
+  else:
+    return pd.DataFrame(data[1:,1:],index=data[1:,0],columns=data[0,1:],**kwargs)
+
+csvDf(test)
+#checking for duplicate data in a column
+
+dups = data.pivot_table(index=['current_time'], aggfunc='size')
+c=0
+for i in dups:
+    if i > 1:
+        c+=1
+print(c)
+import numpy as np
+#chekcing for cardinality 
+max_cardinality = 100
+select = x_data.select_dtypes(exclude =np.number)
+select 
+
+select.info()
+
+
+len(data['country_code_destination'].unique())
+
+188 >> source_name
+218 >> destination_name
+5 >> country_code_source
+6 >> country_code_destination
+7 >> current_day
+2
+
+np.unique(data['target'])
+
+
+X = x_data
+Y = data[['target']]
+
+from sklearn.model_selection import train_test_split as tts 
+xtrain, xtest, ytrain, ytest = tts(X, Y, test_size=0.2)
+
+from sklearn.preprocessing import OneHotEncoder as OHE
+encoder = OHE()
+xtrain_encoded = encoder.fit_transform(xtrain)
+
+#********************************  ********************
+
+
+import matplotlib.pyplot as plt
+data.boxplot('mean_halt_times_source', 'target')
+
+from sklearn.ensemble import RandomForestClassifier as RFC
+classifier = RFC()
+classifier.fit(xtrain,ytrain)
+pred = classifier.predict(xtest)
+
+from sklearn.metrics import accuracy_score as accuracy
+accuracy(ytest,pred)
