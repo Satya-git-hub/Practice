@@ -1,0 +1,35 @@
+#Data preprocessing
+import numpy as np #for mathematics
+import matplotlib.pyplot as plt 
+import pandas as pd #import data / manipulate them
+
+
+dataset = pd.read_csv('Data.csv')
+
+X = dataset.iloc[:,:-1].values
+y = dataset.iloc[:,3].values
+
+#Missing values
+from sklearn.preprocessing import Imputer
+imputer = Imputer(missing_values='NaN', strategy = 'mean', axis=0)
+X[:,1:]=imputer.fit_transform(X[:,1:])
+
+#Labelencoding the values
+from sklearn.preprocessing import LabelEncoder
+encoder = LabelEncoder()
+X[:,0] = encoder.fit_transform(X[:,0])
+
+from sklearn.preprocessing import OneHotEncoder
+onehotencoder = OneHotEncoder(categorical_features = [0])
+X = onehotencoder.fit_transform(X).toarray()
+
+#Splitting the data into trainng set and testing set 
+from sklearn.model_selection import train_test_split as tts
+xtrain, xtest, ytrain, ytest = tts(X, y, test_size=0.2)
+
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+xtrain = sc.fit_transform(xtrain)
+xtest = sc.fit_transform(xtest)
+
+
