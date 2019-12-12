@@ -1,0 +1,46 @@
+#Reinforcement learning 
+#Thompson Sampling Algorithm >> used to check Ads click through rate 
+import pandas as pd
+import numpy as np
+import random
+import matplotlib.pyplot as plt
+dataset = pd.read_csv('Ads_CTR_Optimisation.csv')
+
+'''
+Step 1: At each round n, we consider two numbers for each ad i:
+        - Ni1 (n) - the number of times ad i got reward 1 upto round n,
+        - Ni0 (n) - the number of times ad i got reward 0 upto round n
+        
+Step 2: For each ad i, we take a random draw from the distribution below:
+        
+        theta_i(n) = beta(Ni1(n) + 1, Ni0(n) + 1)
+
+Step 3: We select the ad that has the highest theta_i(n)
+
+'''
+             
+N = 10000
+d = 10
+no_of_rewards_0 = [0] * d
+no_of_rewards_1 = [0] * d
+ad_selected = []
+total_reward = 0
+for n in range(0, N):
+        max_beta=0
+        ad = 0
+        for i in range(0,d):
+                random_beta = random.betavariate(no_of_rewards_1[i] + 1, no_of_rewards_0[i] + 1)
+                if random_beta > max_beta:
+                        max_beta = random_beta
+                        ad = i
+        ad_selected.append(ad)
+        reward = dataset.values [n, ad]
+        if reward == 0:
+                no_of_rewards_0[ad] = no_of_rewards_0[ad] +1
+        else: 
+                no_of_rewards_1[ad] = no_of_rewards_1[ad] + 1
+        total_reward = total_reward+reward
+        
+        
+plt.hist(ad_selected)
+
