@@ -1,0 +1,71 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import re
+from nltk import PorterStemmer
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import StandardScaler
+
+# Importing the dataset
+dataset = pd.read_csv('Churn_modelling.csv')
+x = dataset.iloc[:, 3:13].values
+y = dataset.iloc[:,13:].values
+
+# Encoding categorical data
+encoder = LabelEncoder()
+x[:,1] = encoder.fit_transform(x[:,1])
+x[:,2] = encoder.fit_transform(x[:,2])
+onehot = OneHotEncoder(categorical_features=[1])
+x = onehot.fit_transform(x).toarray()
+x = x[:, 1:]
+
+# Splitting the dataset into the Training set and Test set
+xtrain, xtest, ytrain, ytest =train_test_split(x, y, test_size=0.2, random_state=0)
+
+# Feature Scaling
+scaler = StandardScaler()
+xtrain = scaler.fit_transform(xtrain)
+xtest = scaler.transform(xtest)
+
+# Importing the Keras libraries and packages
+import keras 
+from keras.models import Sequential #initialize neural network
+from keras.layers import Dense #build the layers of ANN - take care of initializing weights
+
+# Initialising the ANN
+classifier = Sequential()
+#no of nodes in hidden layer = average between (no of nodes input layer and no of nodes in output layer)
+# Adding the input layer and the first hidden layer
+classifier.add(Dense(output_dim = 6, activation='relu', input_dim = 11, init='uniform')) #first hidden layer
+# Adding the second hidden layer
+classifier.add(Dense(output_dim=6, init='uniform', activation='relu')) #second hidden layer
+# Adding the output layer
+classifier.add(Dense(output_dim=1, init='uniform', activation='sigmoid')) #output layer
+
+
+'''
+if you are dealing with a dependent variable that has more than two categories like say for
+example three categories then you will need to change two things here.
+First is the output parameter that will you know be set as the number of classes because it will be
+based on the one vs all method while the dependent variable is onehotencoded.
+So here you would need to input three if you have three categories for you to been in a variable.
+And the second thing that you would need to change is the activation function that in this situation
+would be soft Max and soft Max is actually the Sigma function but applied to a dependent variable
+that has more than two categories.
+'''
+
+# Compiling the ANN
+classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+#if your dependent variable has more than 2 category use 'categorical_crossentropy'
+
+classifier.fit(xtrain, ytrain, batch_size=10, nb_epoch=100)
+ypred = classifier.predict(xtest)
+ypred = (ypred>0.5)
+
+confusion_matrix(ytest, ypred)
