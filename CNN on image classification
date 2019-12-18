@@ -1,0 +1,80 @@
+from keras.models import Sequential
+from keras.layers import Convolution2D
+from keras.layers import MaxPooling2D
+from keras.layers import Flatten
+from keras.layers import Dense
+from keras.layers import Conv2D
+
+'''
+There are 2 ways of initializing the NN 
+        - as a Sequence of layers 
+        - as a graph
+Since CNN is still a Sequence of layers we use keras.models.Sequence
+'''
+
+classifier = Sequential()
+'''
+Common practice is to start with 32 convo layers.
+You know we start with 32 feature detectors in the first convolutional layer and then we add other convolutional
+layers with more features detectors like 64 and then 128 and then 256 bit here and that's the second
+reason we're working on a CPU
+'''
+
+classifier.add(Convolution2D(32, 3,3, activation='relu', input_shape=(64,64,3)))
+
+'''
+Here we are using this activation function which by the way will also be the rectifier activation function
+but just to make sure that we don't have any negative pixel values in our future maps depending on the
+parameters that we use for our convolution operation we can get something out of pixels in the future map
+And we need to remove these negative pixels in order to have non-linearity in our convolutional neuralnetwork.
+Because of course classifying some images is a nonlinear problem and so we need to have known in the
+already in our model and that's why we use this activation function here.
+This rectify activation function to make sure we get this nonlinearity.
+'''
+
+classifier.add(MaxPooling2D(pool_size=(2,2)))
+'''
+Why do we apply this MaxPooling step.
+It's because we want to reduce the number of nodes we'll get in the next step.
+That is the flattening step and then the full connection step because in these next steps basically
+what we'll get is all the cells of our future maps flattened in one huge one dimensional vector.
+'''
+classifier.add(Convolution2D(32, 3,3, activation = 'relu'))
+classifier.add(MaxPooling2D(pool_size=(2,2)))
+classifier.add(Flatten())
+
+classifier.add(Dense(output_dim = 128, activation='relu'))
+classifier.add(Dense(output_dim = 1, activation='sigmoid'))
+
+classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+from keras.preprocessing.image import ImageDataGenerator
+
+train_datagen = ImageDataGenerator(
+                rescale=1./255,
+                shear_range=0.2,
+                zoom_range=0.2,
+                horizontal_flip=True)
+
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+train_generator = train_datagen.flow_from_directory(
+                'training_set',
+                target_size=(64, 64),
+                batch_size=32,
+                class_mode='binary')
+
+test_generator = test_datagen.flow_from_directory(
+                'test_set',
+                target_size=(64,64),
+                batch_size=32,
+                class_mode='binary')
+
+classifier.fit_generator(
+        train_generator,
+        steps_per_epoch=8000,
+        epochs=25,
+        validation_data=test_generator,
+        validation_steps=2000)
+
+#8000/8000 [==============================] - 5617s 702ms/step - loss: 0.0087 - acc: 0.9973 - val_loss: 1.8706 - val_acc: 0.7985
