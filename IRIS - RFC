@@ -1,0 +1,92 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV
+
+data = pd.read_csv('iris.csv')
+data.columns
+data = data.rename(columns={'sepal.length': 'sl', 
+                            'sepal.width':'sw', 'petal.length':'pl', 
+                            'petal.width':'pw', 'variety':'Class'})
+
+data.groupby('Class').count()
+data.Class.unique()
+
+data.info()
+data.describe()
+sns.boxplot(data=data)
+sns.countplot(data.Class)
+plt.hist(data.sw)
+sns.pairplot(data)
+sns.scatterplot(data.sl, data.sw, hue=data['Class'])
+sns.distplot(data.sl, kde=False)
+
+x = data.iloc[:,0:4].values
+y = data.iloc[:,4].values
+
+xtrain, xtest, ytrain, ytest =train_test_split(x,y, test_size=0.2, random_state=13)
+classifier = RandomForestClassifier()
+
+param = {'n_estimators': range(1,10), 
+         'criterion':['gini', 'entropy'], 
+         'max_depth':range(2,10) ,   
+         'max_leaf_nodes': range(2,10)}
+
+cv_model = GridSearchCV(classifier, param,
+                        scoring='accuracy',
+                        n_jobs=-1, cv=4
+                        )
+cv_model.fit(xtrain, ytrain)
+cv_model.best_params_
+
+classifier = RandomForestClassifier(n_estimators = 8,
+                                    criterion='gini',
+                                    max_depth=2,
+                                    max_leaf_nodes=6
+                                    )
+classifier.fit(xtrain, ytrain)
+ypred = classifier.predict(xtest)
+
+accuracy_score(ypred, ytest)
+
+#Out[49]: 0.9666666666666667
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
