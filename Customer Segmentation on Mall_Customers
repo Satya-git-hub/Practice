@@ -1,0 +1,96 @@
+#Customer Segmentation on Mall_Customers
+import pandas as pd 
+import numpy as np
+import matplotlib.pyplot as plt
+
+data = pd.read_csv('Mall_Customers.csv')
+data = data.drop(['CustomerID'], axis=1)
+data.columns
+data.rename(columns={'Annual Income (k$)': 'Income', 'Spending Score (1-100)':'Score'}, inplace=True)
+
+data.describe()
+data.info()
+data.head()
+
+import seaborn as sns
+sns.countplot(data.Genre)
+female_percent = data.groupby('Genre')['Age'].count().values[0]/len(data['Age'])
+
+plt.pie([female_percent, 1-female_percent], labels=['Female', 'Male'],
+        autopct = '%.1f', shadow=True
+        )
+plt.show()
+
+sns.distplot(data.Age, kde=False, bins=20)
+
+plt.boxplot(data.Age)
+plt.show()
+
+sns.distplot(data.Income, kde=False, bins=30)
+
+plt.boxplot(data.Score)
+plt.show()
+
+#KMeans clustering 
+from sklearn.cluster import KMeans
+wcss = []
+x = pd.get_dummies(data)
+for i in range(1, 20):
+        model = KMeans(n_clusters=i)
+        model.fit(x)
+        wcss.append(model.inertia_)
+
+plt.plot(range(1,20), wcss)
+
+model = KMeans(n_clusters=6)
+y = model.fit_predict(x)
+
+#Principal component analysis 
+from sklearn.decomposition import PCA
+test_pca = PCA(n_components=None)
+test_x = test_pca.fit_transform(x)
+
+explained_variance = test_pca.explained_variance_ratio_
+
+pca = PCA(n_components=2)
+dummy_x = pca.fit_transform(x)
+pca.explained_variance_ratio_
+
+#Clusters of customers based on Income vs Age
+X  = x.iloc[:,0:2].values
+colors = {0:'blue', 1:'yellow', 2:'red', 3:'green', 4:'cyan',5:'magenta'}
+for i in range(6):
+        plt.scatter(X[y==i,0], X[y==i,1], c=colors[i])
+plt.scatter(model.cluster_centers_[:,0], model.cluster_centers_[:,1], c='black', s=300, label='Centroid')
+plt.title('Clusters of customers')
+plt.xlabel('Age')
+plt.ylabel('Income')
+plt.legend()
+plt.show()
+
+#Clusters of customers based on Income vs Score
+X  = x.iloc[:,1:3].values
+colors = {0:'blue', 1:'yellow', 2:'red', 3:'green', 4:'cyan',5:'magenta'}
+for i in range(6):
+        plt.scatter(X[y==i,0], X[y==i,1], c=colors[i])
+plt.scatter(model.cluster_centers_[:,1], model.cluster_centers_[:,2], c='black', label='Centroid',s=200)
+plt.title('Clusters of customers')
+plt.xlabel('Income')
+plt.ylabel('Score')
+plt.legend()
+plt.show()
+
+#Visualizing the clusters in PCA
+from sklearn.decomposition import PCA
+pca = PCA(n_components=2)
+xtest = pca.fit_transform(x)
+ytest = model.fit_predict(xtest)
+
+import matplotlib.pyplot as plt
+
+colors = {0:'magenta', 1:'yellow', 2:'red', 3:'blue', 4:'cyan', 5:'green'}
+
+for i in range(6):
+        plt.scatter(xtest[ytest==i, 0], xtest[ytest==i, 1], c=colors[i], s=100)
+plt.scatter(model.cluster_centers_[:,0], model.cluster_centers_[:,1], c='black', s=200)
+plt.show()
