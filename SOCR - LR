@@ -1,0 +1,121 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+import math 
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+
+data = pd.read_csv('SOCR.csv')
+data.shape
+data.columns
+data = data.drop(['Index'], axis=1)
+data.shape
+
+data.sample(5)
+data.info()
+data.describe()
+
+x = data.iloc[:, 0:1].values
+y = data.iloc[:, 1:].values
+
+plt.scatter(x,y)
+
+sns.scatterplot(x=x[0],y=y[0])
+
+xtrain, xtest, ytrain, ytest = train_test_split(x,y,test_size=0.2, random_state = 0)
+
+regressor = LinearRegression()
+regressor.fit(xtrain , ytrain)
+ypred = regressor.predict(xtest)
+
+residual_sum = 0 
+residual_squared_sum = 0
+for i in  range(len(ytest)):
+        residual = ytest[i] - ypred[i]
+        residual_squared_sum = residual_squared_sum + residual*residual
+        if residual<0:
+                residual = residual*-1
+                residual_sum = residual_sum+residual
+        else:
+                residual_sum = residual_sum+residual
+                
+MAE = residual_sum / len(ytest)
+#8.18
+
+RMSE = math.sqrt(residual_sum/len(ytest))
+#10.24
+
+#To check the performance of a regression model  - RMSE , RSE
+#The RMSE for your training and your test sets should be very similar if you have built a good model
+
+NOTES
+`````
+Evaluating Regression Models performance
+########################################
+The performance of a regression model can be understood by knowing the error rate of the predictions made by the model. You can also measure the performance by knowing how well your regression line fit the dataset.
+
+A good regression model is one where the difference between the actual or observed values and predicted values for the selected model is small and unbiased for train, validation and test data sets.
+
+To measure the performance of your regression model,  some statistical metrics are used. Here we will discuss four of the most popular metrics. They are-
+
+    -	Mean Absolute Error(MAE)
+
+    -	Root Mean Square  Error(RMSE)
+
+    -	Coefficient of determination or R2
+
+    -	Adjusted R2
+
+Mean Absolute Error(MAE)
+````````````````````````
+This is the simplest of all the metrics. It is measured by taking the average of the absolute difference between actual values and the predictions.
+
+                        MAE = summ(|actual - predicted|) / n                  
+n - no of datapoints
+
+What does this MAE value mean? This value tells us that the model is predicting  this much value more or less on average than the actual value.
+
+Note: The less the value of MAE the better the performance of your model.
+
+Root Mean Square  Error(RMSE)
+`````````````````````````````
+The Root Mean Square Error is measured by taking the square root of the average of the squared difference between the prediction and the actual value. It represents the sample standard deviation of the differences between predicted values and observed values(also called residuals). It is calculated using the following formula:
+
+                             RMSE = sqrt(	summ(	(actual - predicted)^2	) / n	)
+n - no of datapoints
+
+Here the RMSE value is greater than that of MAE. This is because RMSE takes the square of the differences between the predictions and the actual value, hence the value is greater the MAE value.
+
+Both MAE and RMSE are in the same units as the dependent variable. As compared to MAE, RMSE will give higher weight to the errors and punish large error in the model. RMSE is the default metric of many models as the loss function defined in terms of RMSE is smoothly differentiable and makes it easier to perform mathematical operations.
+
+Note: When you have more samples then reconstructing the error distribution using RMSE is more reliable. But RMSE is highly sensitive to outlier values(an outlier is a data point that differs significantly from other observations). Hence, prior to using this metric, you must remove the outliers from your data set.
+
+Coefficient of Determination or R^2
+```````````````````````````````````
+It measures how well the actual outcomes are replicated by the regression line. It helps you to understand how well the independent variable adjusted with the variance in your model. That means how good is your model for a dataset. The mathematical representation for R^2 is-
+
+                                   R^2 = SSR / SST = summ((predicted - mean)^2) / summ((actual - mean)^2)
+
+Here, SSR = Sum Square of Residuals(the squared difference between the predicted and the average value)
+
+      SST = Sum Square of Total(the squared difference between the actual and average value)
+
+The closer its value to one, the better your model is. This is because either your regression line has well fitted the dataset or the data points are distributed with low variance. Which lessens the value of the Sum of Residuals. Hence, the equation gets closer to one.
+
+Adjusted R-squared
+``````````````````
+There is a drawback of R^2  that it improves every time when we add new variables in the model.
+
+Think about it, whenever you add a new variable there can be two circumstances, either the new variable improves your model or not. When the new variable improves your model then it is ok. But what if it does not improve your model? Then the problem occurs. The value of  R^2 keeps on increasing with the addition of more independent variables even though they may not have a significant impact on the prediction.
+
+To solve this pitfall, an Adjusted R^2 value is used instead of R^2 value. The mathematical representation for Adjusted  R^2  is-
+
+                  Adj R^2 = 1 - (1-R^2) (n-1) / (n - p -1)              
+
+p - no of regressor 
+n - sample size
+
+Adjusted R^2 will penalize the model whenever you add a new variable to it. From the equation, you can understand that clearly. Whenever you add a new variable, the value of  R^2  increases and it also increases the denominator( n - p - 1 ) on the left of the equation. As the denominator increases, it increases the value of 1 -  R^2 on the left of the equation. Which in turn decreases the value of Adjusted R^2. Hence, using an Adjusted R^2 value you can better understand the effect of the additional variables to your model.
+
+Note: Adjusted  R^2 is greatly helpful when your dataset contains more features and you need to choose the most effective features to train your model.
