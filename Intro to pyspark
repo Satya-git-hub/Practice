@@ -1,0 +1,80 @@
+!git clone http://github.com/wchill/HMP_Dataset.git
+
+ls HMP_Dataset 
+
+ls HMP_Dataset/Brush_teeth
+
+import os
+files  = os.listdir('HMP_Dataset')
+files = [ file for file in files if '_' in file]
+files
+
+from pyspark.sql.types import StructType, IntegerType, StructField
+schema = StructType(
+                    [
+                        StructField('x', IntegerType(), True),
+                        StructField('y', IntegerType(), True),
+                        StructField('z', IntegerType(), True)
+                    ]
+                    )
+
+df = None
+from pyspark.sql.functions import lit
+for category in files:
+    data_files = os.listdir('HMP_Dataset/'+category)
+    for data_file in data_files:
+        print(data_file)
+        temp_df = spark.read.option('header', 'false').option('delimiter', ' ').csv('HMP_Dataset/'+category+'/'+data_file, schema = schema)
+        temp_df = temp_df.withColumn('class', lit(category))
+        temp_df = temp_df.withColumn('source', lit(data_file))
+        
+        if df is None:
+            df = temp_df
+        else : 
+            df = df.union(temp_df)
+        
+        
+df.show()
+
+
+from pyspark.ml.feature import StringIndexer
+indexer = StringIndexer(inputCol='class', outputCol='classIndex')
+indexed = indexer.fit(df).transform(df)
+indexed.show()
+
+from pyspark.ml.feature import OneHotEncoder
+encoder = OneHotEncoder(inputCol='classIndex', outputCol='categoryVec')
+encoded = encoder.transform(df)
+encoded.show()
+
+from pyspark.ml.linalg import Vectors
+from pyspark.ml.feature import VectorAssembler 
+vectorassembler = VectorAssembler(
+							inputCols = ['x','y', 'z'],
+							outputCol = 'features'
+							)
+features_vectorized = vectorassembler.transform(encoded)
+features_vectorized.show()
+
+from pyspark.ml.feature import Normalizer
+normalizer = Normalizer(inputCol = 'features', outputCol='features_norm', p=1.0)
+normalized_data = normalizer.transform(features_vectorized)
+normalized_data.show()
+
+from pyspark.ml import Pipeline
+pipeline = Pipeline(stages = [
+					indexer, encoder, vectorassembler, normalizer
+					])
+					
+					
+model = pipeline.fit(df)					
+prediction = model.transform(df)
+prediction.show()
+
+
+
+df_train = predciton.drop('x','y','z', 'class', 'source', 'features')
+
+df_train.show()
+					
+					
