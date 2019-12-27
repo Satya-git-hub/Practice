@@ -1,0 +1,58 @@
+import pandas as pd
+import numpy as np 
+import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+import seaborn as sns
+from sklearn.model_selection import GridSearchCV
+
+data = pd.read_csv('wineQualityWhites.csv')
+data.columns
+data.info()
+sns.countplot(data.quality)
+
+test_list=[0]*data.shape[0]
+
+for i in range(data.shape[0]):
+        if data['quality'][i] < 5 :
+                test_list[i] = 'bad'
+        elif data['quality'][i] > 4 and data['quality'][i] < 7:
+                test_list[i] = 'medium'
+        elif data['quality'][i] > 6:
+                test_list[i] = 'high'
+                
+data['class'] = test_list
+
+data.info()
+data.head()
+sns.countplot(data['class'])
+
+x  = data.drop(['class', 'quality'], axis=1)
+y = data['class']
+
+xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size =0.2, random_state=13)
+
+classifier = RandomForestClassifier()
+param = {
+        'n_estimators':range(2,20), 
+        'criterion':["gini", 'entropy'], 
+        'max_depth':range(1,20), 
+        }
+
+cv = GridSearchCV(classifier, param, scoring='accuracy', cv =4, n_jobs=-1)
+cv_model = cv.fit(xtrain, ytrain)
+cv_model.best_params_
+
+classifier = RandomForestClassifier(
+                n_estimators=17, 
+                criterion="entropy", 
+                max_depth=16, 
+                bootstrap=True
+                        )
+
+classifier.fit(xtrain, ytrain)
+ypred = classifier.predict(xtest)
+accuracy_score(ytest, ypred)
+
+
