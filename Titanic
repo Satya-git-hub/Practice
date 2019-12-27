@@ -1,0 +1,54 @@
+import pandas as pd
+import numpy as np 
+import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LinearRegression 
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+import seaborn as sns
+from sklearn.model_selection import GridSearchCV
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
+from xgboost import XGBClassifier
+
+data = pd.read_csv('titanic.csv')
+data.columns
+data.info()
+data.head()
+sns.countplot(data.Survived)
+data.groupby('Sex').Survived.count()
+sns.barplot('Sex', 'Survived', data=data)
+sns.barplot('Survived', 'Pclass', data=data)
+data.Pclass
+sns.countplot(x['Pclass'])
+
+data.columns
+len(data.Fare.unique())
+
+
+x = data.drop(['Survived','Name'], axis = 1)
+y = data.Survived 
+
+label_encoder = LabelEncoder()
+x.Sex = label_encoder.fit_transform(x.Sex)
+
+scaler = StandardScaler()
+x = scaler.fit_transform(x)
+
+x.info()
+xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=0.2, random_state=7)
+classifer = RandomForestClassifier()
+classifer.fit(xtrain, ytrain)
+ypred = classifer.predict(xtest)
+
+accuracy_score(ytest, ypred)
+#Out[151]: 0.8
+
+
+classifier = XGBClassifier()
+classifier.fit(xtrain, ytrain)
+ypred = classifier.predict(xtest)
+
+accuracy_score(ytest, ypred)
+#0.83
