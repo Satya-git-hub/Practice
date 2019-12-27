@@ -54,5 +54,5 @@ classifier = RandomForestClassifier(
 classifier.fit(xtrain, ytrain)
 ypred = classifier.predict(xtest)
 accuracy_score(ytest, ypred)
-
+#0.84
 
