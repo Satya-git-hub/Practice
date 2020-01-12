@@ -65,6 +65,12 @@ classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accur
 #if your dependent variable has more than 2 category use 'categorical_crossentropy'
 
 classifier.fit(xtrain, ytrain, batch_size=10, nb_epoch=100)
+#batch size = after how many observations do you want to update the weigths 
+#nb_epoch = the whole training set passed through ANN that makes an epoch 
+'''
+repeat all the steps till here and update the weights after each observation - Reinforcement Learning 
+repeat all the steps till here but update the weights only after a batch of observation - Batch Learning
+'''
 ypred = classifier.predict(xtest)
 ypred = (ypred>0.5)
 
