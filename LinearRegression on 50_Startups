@@ -1,0 +1,39 @@
+#LinearRegression on 50_Startups.csv
+import pandas as pd
+import matplotlib as plt
+data = pd.read_csv('50_Startups.csv')
+
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+l_encoder = LabelEncoder()
+data['State'] = l_encoder.fit_transform(data['State'])
+
+o_encoder = OneHotEncoder(handle_unknown='ignore')
+dummy = pd.DataFrame(o_encoder.fit_transform(data[['State']]).toarray())
+y = data.iloc[:, 4:].values
+data = data.drop(['State', 'Profit'], axis =1)
+data = data.join(dummy)
+x = data.iloc[:, 0:].values
+
+data.info()
+
+from sklearn.model_selection import train_test_split
+xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=0.2)
+
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+xtrain = scaler.fit_transform(xtrain)
+xtest = scaler.transform(xtest)
+
+from sklearn.linear_model import LinearRegression
+mlr_model = LinearRegression()
+mlr_model.fit(xtrain, ytrain)
+mlr_predict = model.predict(xtest)
+
+import statsmodels.api as sm 
+from statsmodels.api import OLS
+
+xconstant = sm.add_constant(xtrain)
+ols_model = OLS(ytrain, xconstant)
+estimate = ols_model.fit()
+estimate.summary()
+
